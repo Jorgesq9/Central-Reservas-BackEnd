@@ -1,0 +1,26 @@
+# Ignorar variables de entorno y secretos
+.env
+
+# Ignorar dependencias de Node.js
+node_modules/
+
+# Ignorar logs
+*.log
+logs/
+
+# Ignorar archivos de compilación (si aplican)
+dist/
+build/
+
+# Ignorar configuraciones específicas del editor
+.vscode/
+.idea/
+
+# Ignorar configuraciones del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Ignorar otros archivos temporales o de sistema
+*.tmp
+*.bak
+*.swp

@@ -1,0 +1,476 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Gesti\u00f3n de Reservas API",
+    "description": "API para gestionar reservas y trabajadores.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Servidor local"
+    }
+  ],
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "summary": "Registrar un usuario",
+        "tags": ["Autenticaci\u00f3n"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "worker1"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  },
+                  "role": {
+                    "type": "string",
+                    "example": "worker"
+                  }
+                },
+                "required": ["username", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario registrado con \u00e9xito"
+          },
+          "400": {
+            "description": "Error al registrar usuario"
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Iniciar sesi\u00f3n",
+        "tags": ["Autenticaci\u00f3n"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "worker1"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  }
+                },
+                "required": ["username", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inicio de sesi\u00f3n exitoso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciales inv\u00e1lidas"
+          }
+        }
+      }
+    },
+    "/api/reservations": {
+      "post": {
+        "summary": "Crear una nueva reserva",
+        "tags": ["Reservas"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "serviceType": {
+                    "type": "string",
+                    "example": "Reparaci\u00f3n de aire acondicionado"
+                  },
+                  "client": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "example": "Juan P\u00e9rez"
+                      },
+                      "phone": {
+                        "type": "string",
+                        "example": "123456789"
+                      }
+                    }
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "Calle Falsa 123"
+                  },
+                  "assignedWorker": {
+                    "type": "string",
+                    "example": "<id_worker>"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "example": "high"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-11-20"
+                  }
+                },
+                "required": [
+                  "serviceType",
+                  "client",
+                  "address",
+                  "priority",
+                  "date"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Reserva creada con \u00e9xito"
+          },
+          "400": {
+            "description": "Error al crear la reserva"
+          }
+        }
+      },
+      "get": {
+        "summary": "Obtener todas las reservas con filtros opcionales",
+        "tags": ["Reservas"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "pending"
+            },
+            "description": "Filtrar reservas por estado (pending, in_progress, completed)"
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "high"
+            },
+            "description": "Filtrar reservas por prioridad (low, medium, high)"
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2024-01-01"
+            },
+            "description": "Filtrar reservas con fecha mayor o igual a esta"
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2024-12-31"
+            },
+            "description": "Filtrar reservas con fecha menor o igual a esta"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de reservas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "64ae..."
+                      },
+                      "serviceType": {
+                        "type": "string",
+                        "example": "Mantenimiento de aire acondicionado"
+                      },
+                      "client": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "example": "Juan P\u00e9rez"
+                          },
+                          "phone": {
+                            "type": "string",
+                            "example": "123456789"
+                          }
+                        }
+                      },
+                      "status": {
+                        "type": "string",
+                        "example": "pending"
+                      },
+                      "priority": {
+                        "type": "string",
+                        "example": "high"
+                      },
+                      "date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2024-05-20"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reservations/{id}": {
+      "patch": {
+        "summary": "Actualizar una reserva existente",
+        "tags": ["Reservas"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID de la reserva a actualizar"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "example": "in_progress"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "example": "medium"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reserva actualizada con \u00e9xito"
+          },
+          "404": {
+            "description": "Reserva no encontrada"
+          },
+          "400": {
+            "description": "Error al actualizar la reserva"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar una reserva existente",
+        "tags": ["Reservas (Admin)"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID de la reserva a eliminar"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reserva eliminada con \u00e9xito"
+          },
+          "404": {
+            "description": "Reserva no encontrada"
+          },
+          "403": {
+            "description": "Acceso denegado"
+          }
+        }
+      }
+    },
+    "/api/reservations/{reservationId}/history": {
+      "get": {
+        "summary": "Obtener historial de cambios de una reserva",
+        "tags": ["Reservas"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID de la reserva para obtener su historial"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de cambios en el estado de la reserva",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "64bf..."
+                      },
+                      "reservation": {
+                        "type": "string",
+                        "example": "64ae..."
+                      },
+                      "oldStatus": {
+                        "type": "string",
+                        "example": "pending"
+                      },
+                      "newStatus": {
+                        "type": "string",
+                        "example": "in_progress"
+                      },
+                      "changedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-05-10T10:00:00.000Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reserva no encontrada"
+          }
+        }
+      }
+    },
+    "/api/reservations/statistics": {
+      "get": {
+        "summary": "Obtener estad\u00edsticas de reservas (solo admin)",
+        "tags": ["Reservas (Admin)"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estad\u00edsticas generales de las reservas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalReservations": {
+                      "type": "integer",
+                      "example": 20
+                    },
+                    "completedReservations": {
+                      "type": "integer",
+                      "example": 8
+                    },
+                    "pendingReservations": {
+                      "type": "integer",
+                      "example": 7
+                    },
+                    "inProgressReservations": {
+                      "type": "integer",
+                      "example": 5
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
