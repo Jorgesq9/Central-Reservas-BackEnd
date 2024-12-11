@@ -7,7 +7,7 @@ const reservationSchema = new mongoose.Schema({
   assignedWorker: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   reservationStatus: {
     type: String,
-    enum: ["pending", "in_progess", "completed"],
+    enum: ["pending", "in_progress", "completed"],
     default: "pending",
   },
   date: { type: Date, required: true },
