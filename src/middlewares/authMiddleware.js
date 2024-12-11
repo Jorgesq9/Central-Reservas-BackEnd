@@ -18,7 +18,7 @@ exports.protect = async (req, res, next) => {
   }
 };
 exports.adminOnly = (req, res, next) => {
-  console.log(req.user); // Verifica el valor de req.user
+  console.log("Usuario en adminOnly middleware:", req.user); // Verifica el valor de req.user
   if (!req.user || req.user.role !== "admin") {
     return res.status(403).json({ message: "Access denied" });
   }

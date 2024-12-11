@@ -6,9 +6,14 @@ const statusHistorySchema = new mongoose.Schema({
     ref: "Reservation",
     required: true,
   },
-  oldStatus: { type: String, required: true },
-  newStatus: { type: String, required: true },
+  oldReservationStatus: { type: String, required: true },
+  newReservationStatus: { type: String, required: true },
+  changedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // Relación con el modelo User
+    required: true,
+  },
   changedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("StatusHistory", statusHistorySchema);
+module.exports = mongoose.model("statusHistory", statusHistorySchema);

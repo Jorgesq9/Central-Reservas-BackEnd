@@ -1,14 +1,14 @@
-const Reservation = require("../models/Reservation");
+const Reservation = require("../models/reservation");
 const statusHistory = require("../models/statusHistory");
 
 exports.getReservations = async (req, res) => {
   try {
-    const { status, startDate, endDate, priority } = req.query;
+    const { reservationStatus, startDate, endDate, priority } = req.query;
 
     // Obj con filtro dinamico
 
     const filters = {};
-    if (status) filters.status = status;
+    if (reservationStatus) filters.reservationStatus = reservationStatus;
     if (priority) filters.priority = priority;
 
     // filtar por rango de fechas
@@ -21,7 +21,8 @@ exports.getReservations = async (req, res) => {
     }
 
     const reservations = await Reservation.find(filters).populate(
-      "assignedWorker"
+      "assignedWorker",
+      "name username"
     );
     res.status(200).json(reservations);
   } catch (error) {
@@ -33,18 +34,34 @@ exports.getReservations = async (req, res) => {
 };
 
 exports.createReservation = async (req, res) => {
-  const { serviceType, client, address, assignedWorker, date, priority } =
-    req.body;
-  const reservation = new Reservation({
-    serviceType,
-    client,
-    address,
-    assignedWorker,
-    date,
-    priority,
-  });
-  await reservation.save();
-  res.status(201).json(reservation);
+  try {
+    const { serviceType, client, address, date, priority, reservationStatus } =
+      req.body;
+
+    // Verificar que req.user esté disponible (gracias al middleware protect)
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: User not authenticated" });
+    }
+
+    const reservation = new Reservation({
+      serviceType,
+      client,
+      address,
+      assignedWorker: req.user._id, // Asignar automáticamente al usuario autenticado
+      date,
+      priority,
+      reservationStatus,
+    });
+
+    await reservation.save();
+    res.status(201).json(reservation);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error creating reservation", error: error.message });
+  }
 };
 
 exports.updateReservation = async (req, res) => {
@@ -56,15 +73,19 @@ exports.updateReservation = async (req, res) => {
     if (!reservation)
       return res.status(404).json({ message: "Reservation not found" });
 
-    // registrar cambio de estado
-
-    if (updates.status && updates.status !== reservation.status) {
+    // Registrar cambio de estado
+    if (
+      updates.reservationStatus &&
+      updates.reservationStatus !== reservation.reservationStatus
+    ) {
       await statusHistory.create({
         reservation: id,
-        oldStatus: reservation.status,
-        newStatus: updates.status,
+        oldReservationStatus: reservation.reservationStatus,
+        newReservationStatus: updates.reservationStatus,
+        changedBy: req.user.id, // El ID del usuario autenticado
       });
     }
+
     // Actualizar la reserva
     const updatedReservation = await Reservation.findByIdAndUpdate(
       id,
@@ -96,12 +117,10 @@ exports.deleteReservations = async (req, res) => {
 
     res.status(200).json({ message: "Reservation eliminated succesfully" });
   } catch (error) {
-    res
-      .status(500)
-      .jsno({
-        message: "Erros eliminating the reservation",
-        error: error.message,
-      });
+    res.status(500).jsno({
+      message: "Erros eliminating the reservation",
+      error: error.message,
+    });
   }
 };
 
@@ -110,26 +129,32 @@ exports.deleteReservations = async (req, res) => {
 exports.getStatusHistory = async (req, res) => {
   try {
     const { reservationId } = req.params;
-    const history = await statusHistory.find({ reservation: reservationId });
+
+    const history = await statusHistory
+      .find({ reservation: reservationId })
+      .populate("changedBy", "name username") // Asegúrate de incluir `name`
+      .exec();
+
+    console.log("Historial enviado al frontend:", history); // Depuración
     res.status(200).json(history);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error obtaining history", error: error.message });
+    res.status(500).json({
+      message: "Error obtaining history",
+      error: error.message,
+    });
   }
 };
-
 exports.getStatistics = async (req, res) => {
   try {
     const totalReservations = await Reservation.countDocuments();
     const completedReservations = await Reservation.countDocuments({
-      status: "completed",
+      reservationStatus: "completed",
     });
     const pendingReservations = await Reservation.countDocuments({
-      status: "pending",
+      reservationStatus: "pending",
     });
     const inProgressReservations = await Reservation.countDocuments({
-      status: "in_progress",
+      reservationStatus: "in_progress",
     });
 
     res.status(200).json({

@@ -3,9 +3,9 @@ const mongoose = require("mongoose");
 const reservationSchema = new mongoose.Schema({
   serviceType: { type: String, required: true },
   client: { name: String, phone: String },
-  adress: String,
+  address: String,
   assignedWorker: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  status: {
+  reservationStatus: {
     type: String,
     enum: ["pending", "in_progess", "completed"],
     default: "pending",
