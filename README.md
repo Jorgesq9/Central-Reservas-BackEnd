@@ -80,6 +80,12 @@ La documentación interactiva de la API está disponible mediante Swagger en:
 https://api.jorgeesquivafullstack.es/api-docs/
 ```
 
+
+## 🌍 Despliegue Actual
+
+El juego está alojado en un servidor casero utilizando cloudflared (Cloudflare Tunnel), lo que permite exponerlo al público sin abrir puertos ni usar una IP pública.
+
+
 ## Contribución
 
 1. Haz un fork del proyecto.
