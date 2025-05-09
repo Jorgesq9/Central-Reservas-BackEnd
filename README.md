@@ -77,7 +77,7 @@ La API se ejecuta en `http://localhost:5000` por defecto.
 La documentación interactiva de la API está disponible mediante Swagger en:
 
 ```
-http://localhost:5000/api-docs
+https://api.jorgeesquivafullstack.es/api-docs/
 ```
 
 ## Contribución
